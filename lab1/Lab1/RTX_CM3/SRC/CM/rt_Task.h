@@ -22,7 +22,6 @@
 #define WAIT_SEM        7
 #define WAIT_MBX        8
 #define WAIT_MUT        9
-#define WAIT_MEM        10
 
 /* Return codes */
 #define OS_R_TMO        0x01
@@ -48,7 +47,6 @@ extern OS_RESULT rt_tsk_prio   (OS_TID task_id, U8 new_prio);
 extern OS_TID    rt_tsk_create (FUNCP task, U32 prio_stksz, void *stk, void *argv);
 extern OS_RESULT rt_tsk_delete (OS_TID task_id);
 extern void      rt_sys_init   (FUNCP first_task, U32 prio_stksz, void *stk);
-
 
 /*----------------------------------------------------------------------------
  * end of file

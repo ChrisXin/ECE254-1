@@ -7,9 +7,11 @@
  *----------------------------------------------------------------------------
  *      This code is part of the RealView Run-Time Library.
  *      Copyright (c) 2004-2012 KEIL - An ARM Company. All rights reserved.
- *
- *      NOTE: This file has been modified to complete ECE254 Lab3
  *---------------------------------------------------------------------------*/
+
+/* Definitions */
+#define FIFO_SZ         16        /* Allowed values: 16, 32, 64, ...         */
+#define FIFO_MASK       (FIFO_SZ-1)
 
 /* Types */
 typedef char               S8;
@@ -23,6 +25,8 @@ typedef unsigned long long U64;
 typedef unsigned char      BIT;
 typedef unsigned int       BOOL;
 typedef void               (*FUNCP)(void);
+typedef void               (*FUNCPP)(void *);
+
 
 typedef U32     OS_TID;
 typedef void    *OS_ID;
@@ -42,15 +46,11 @@ typedef struct OS_TCB {
   U16    interval_time;           /* Time interval for periodic waits        */
   U16    events;                  /* Event flags                             */
   U16    waits;                   /* Wait flags                              */
-  void   **msg;                   /* Direct message passing when task waits  */
+  void   *p_msg;                  /* Direct message passing when task waits  */
+  U8     ret_val;                 /* Return value upon completion of a wait  */
 
-  /* Start: ECE254 Changes by Lab Staff*/
-  /* The following variable type is changed from U8 to U32 for ECE254 Lab3   */
-  U32    ret_val;                 /* Return value upon completion of a wait  */
-  /* End: ECE254 Changes by Lab Staff*/
-                                  
-  /* Hardware dependant part: specific for CM processor                      */
-  U8     ret_upd;                 /* Updated return value                    */
+  /* Hardware dependant part: specific for ARM processor                     */
+  U8     full_ctx;                /* Full or reduced context storage         */
   U16    priv_stack;              /* Private stack size, 0= system assigned  */
   U32    tsk_stack;               /* Current task Stack pointer (R13)        */
   U32    *stack;                  /* Pointer to Task Stack memory block      */
@@ -58,14 +58,8 @@ typedef struct OS_TCB {
   /* Task entry point used for uVision debugger                              */
   FUNCP  ptask;                   /* Task entry address                      */
 } *P_TCB;
-#define TCB_RETVAL      32        /* 'ret_val' offset                        */
-
-/* Start: ECE254 Changes by Lab Staff*/
-/* The following two macros are modifed from the original in ECE254 Lab3     */ 
-#define TCB_RETUPD      36        /* 'ret_upd' offset, original = 33         */
-#define TCB_TSTACK      40        /* 'tsk_stack' offset, original = 36       */
-/* END: ECE254 Changes by Lab Staff*/
-
+#define TCB_FCTX        33        /* 'full_ctx' offset                       */
+#define TCB_TSTACK      36        /* 'tsk_stack' offset                      */
 
 typedef struct OS_PSFE {          /* Post Service Fifo Entry                 */
   void  *id;                      /* Object Identification                   */
@@ -80,10 +74,11 @@ typedef struct OS_PSQ {           /* Post Service Queue                      */
   struct OS_PSFE q[1];            /* FIFO Content                            */
 } *P_PSQ;
 
-typedef struct OS_TSK {
-  P_TCB  run;                     /* Current running task                    */
-  P_TCB  new;                     /* Scheduled task to run                   */
-} *P_TSK;
+typedef struct OS_PSH {           /* Push Request                            */
+  U32    cnt;                     /* HW timer snapshot                       */
+  BIT    req;                     /* Push Service Request                    */
+  BIT    flag;                    /* Push Service Flag                       */
+} *P_PSH;
 
 typedef struct OS_ROBIN {         /* Round Robin Control                     */
   P_TCB  task;                    /* Round Robin task                        */
@@ -142,19 +137,12 @@ typedef struct OS_BM {
   U32  blk_size;                  /* Memory block size                       */
 } *P_BM;
 
-
-typedef struct rl_task_info {
-U8 state; /* Task state */
-U8 prio; /* Execution priority */
-U8 task_id; /* Task ID value for optimized TCB access */
-U8 stack_usage; /* Stack usage percent value. eg.=58 if 58% */
-void (*ptask)(); /* Task entry address */
-} RL_TASK_INFO;
-
 /* Definitions */
 #define __TRUE          1
 #define __FALSE         0
 #define NULL            ((void *) 0)
+
+#define __naked         __declspec(noreturn)
 
 /*----------------------------------------------------------------------------
  * end of file

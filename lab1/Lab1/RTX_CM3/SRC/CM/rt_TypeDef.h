@@ -7,8 +7,6 @@
  *----------------------------------------------------------------------------
  *      This code is part of the RealView Run-Time Library.
  *      Copyright (c) 2004-2012 KEIL - An ARM Company. All rights reserved.
- *
- *      NOTE: This file has been modified to complete ECE254 Lab3
  *---------------------------------------------------------------------------*/
 
 /* Types */
@@ -43,12 +41,8 @@ typedef struct OS_TCB {
   U16    events;                  /* Event flags                             */
   U16    waits;                   /* Wait flags                              */
   void   **msg;                   /* Direct message passing when task waits  */
+  U8     ret_val;                 /* Return value upon completion of a wait  */
 
-  /* Start: ECE254 Changes by Lab Staff*/
-  /* The following variable type is changed from U8 to U32 for ECE254 Lab3   */
-  U32    ret_val;                 /* Return value upon completion of a wait  */
-  /* End: ECE254 Changes by Lab Staff*/
-                                  
   /* Hardware dependant part: specific for CM processor                      */
   U8     ret_upd;                 /* Updated return value                    */
   U16    priv_stack;              /* Private stack size, 0= system assigned  */
@@ -59,13 +53,8 @@ typedef struct OS_TCB {
   FUNCP  ptask;                   /* Task entry address                      */
 } *P_TCB;
 #define TCB_RETVAL      32        /* 'ret_val' offset                        */
-
-/* Start: ECE254 Changes by Lab Staff*/
-/* The following two macros are modifed from the original in ECE254 Lab3     */ 
-#define TCB_RETUPD      36        /* 'ret_upd' offset, original = 33         */
-#define TCB_TSTACK      40        /* 'tsk_stack' offset, original = 36       */
-/* END: ECE254 Changes by Lab Staff*/
-
+#define TCB_RETUPD      33        /* 'ret_upd' offset                        */
+#define TCB_TSTACK      36        /* 'tsk_stack' offset                      */
 
 typedef struct OS_PSFE {          /* Post Service Fifo Entry                 */
   void  *id;                      /* Object Identification                   */
@@ -141,15 +130,6 @@ typedef struct OS_BM {
   void *end;                      /* Pointer to memory block end             */
   U32  blk_size;                  /* Memory block size                       */
 } *P_BM;
-
-
-typedef struct rl_task_info {
-U8 state; /* Task state */
-U8 prio; /* Execution priority */
-U8 task_id; /* Task ID value for optimized TCB access */
-U8 stack_usage; /* Stack usage percent value. eg.=58 if 58% */
-void (*ptask)(); /* Task entry address */
-} RL_TASK_INFO;
 
 /* Definitions */
 #define __TRUE          1

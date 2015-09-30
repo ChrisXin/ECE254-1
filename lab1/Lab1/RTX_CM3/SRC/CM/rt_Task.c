@@ -321,48 +321,6 @@ void rt_sys_init (FUNCP first_task, U32 prio_stksz, void *stk) {
   rt_tsk_create (first_task, prio_stksz, stk, NULL);
 }
 
-
-
-
-
-/*--------------------------- os_tsk_get -----------------------------------*/
-
-OS_RESULT os_tsk_get (OS_TID task_id, RL_TASK_INFO *buffer) {
-		// starting address of the task in the stack 
-		U16 start_address = p_tcb -> stack[0];
-		// the address of the task which is currently running in the stack 
-		U16 running_address = p_tcb -> tsk_stack; 
-		
-	
-     /*	state */
-      P_TCB p_task;
-	  p_task = os_active_TCB[task_id-1];
-      buffer->state = p_task->state;
-
-	
-     /*	execution priority  */
-      P_TCB p_task;
-	  p_task = os_active_TCB[task_id-1];
-      buffer->prio = p_task->prio;
-
-
-	
-	   /*	task_id  */
-     	buffer->task_id = rt_get_TID();
-		
-    	/* stack_usage 	 */
-		// usage = current usage / size 
-		buffer->stack_usage = (running_address - start_address)/os_stackinfo * 100;
-		
-		/*   *ptask   */
-	  P_TCB p_task;
-	  p_task = os_active_TCB[task_id-1];
-	  
-	  //buffer-> = start_add ptask
-	 
-	  return (OS_R_OK);
-}
-
 /*----------------------------------------------------------------------------
  * end of file
  *---------------------------------------------------------------------------*/
